@@ -71,12 +71,15 @@ class EvidenceEngine:
         token_saving = round(100 * (1 - used / naive), 1) if naive else 0
 
         artifact_hash = hashlib.sha256(json.dumps(summary, sort_keys=True).encode()).hexdigest()
+        llm_desc = self._describe_llm()
         run_manifest = {
             "runId": run_id,
             "graphVersion": manifest_extra.get("graphVersion"),
             "commit": manifest_extra.get("commit"),
             "timestamp": datetime.now().isoformat(),
-            "modelVersion": "simulated-adapter",
+            "modelVersion": llm_desc.get("modelVersion", "simulated-adapter"),
+            "modelProvider": llm_desc.get("provider", "simulated"),
+            "modelBaseUrl": llm_desc.get("baseUrl"),
             "orchestratorVersion": "3.0.0",
             "methodsTotal": len(methods),
             "methodsDirty": len(delta.get("dirtyMethods", [])),
@@ -224,6 +227,39 @@ class EvidenceEngine:
             ),
         }
         return gates
+
+    def _describe_llm(self):
+        """Describe the active LLM adapter for the run manifest.
+
+        Returns: {modelVersion, provider, baseUrl} — falls back to
+        simulated-adapter if no real provider is configured.
+        """
+        try:
+            from llm_adapter import _resolve_config, get_llm_adapter
+            # Resolve config (does not instantiate SDK clients)
+            provider, api_key, base_url, model, source = _resolve_config()
+            # Try to get a richer description from the live adapter (optional)
+            desc = {}
+            try:
+                adapter = get_llm_adapter()
+                desc = adapter.describe() if adapter else {}
+            except Exception:
+                pass  # SDK not installed — config is enough
+            final_provider = desc.get("provider") or provider
+            final_model = desc.get("model") or model
+            if not final_model:
+                final_model = "simulated-adapter" if final_provider == "simulated" else "unknown"
+            return {
+                "modelVersion": final_model,
+                "provider": final_provider,
+                "baseUrl": desc.get("baseUrl") or base_url,
+            }
+        except Exception as e:
+            return {
+                "modelVersion": "simulated-adapter",
+                "provider": "simulated",
+                "error": str(e),
+            }
 
     def _write_json(self, package_dir, name, data):
         with open(os.path.join(package_dir, name), "w") as f:
