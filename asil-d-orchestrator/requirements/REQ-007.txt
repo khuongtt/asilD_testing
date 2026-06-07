@@ -1,0 +1,2 @@
+REQ-007 | ASIL-D | System shall apply maximum brake pressure when speed exceeds threshold.
+REQ-008 | ASIL-D | System shall return zero pressure when speed or distance is non-positive.

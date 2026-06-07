@@ -1,0 +1,89 @@
+[
+  {
+    "methodId": "M_calculateBrakePressure_9b6638ec",
+    "asilLevel": "D",
+    "checklistResults": [
+      {
+        "id": "S-01",
+        "item": "Null check on all nullable parameters",
+        "status": "PASS"
+      },
+      {
+        "id": "S-02",
+        "item": "Return value null check before dereferencing",
+        "status": "PASS"
+      },
+      {
+        "id": "S-03",
+        "item": "Integer overflow guard on arithmetic ops",
+        "status": "PASS"
+      },
+      {
+        "id": "S-04",
+        "item": "Integer underflow guard on decrement ops",
+        "status": "PASS"
+      },
+      {
+        "id": "S-05",
+        "item": "Exception handler specificity",
+        "status": "PASS"
+      },
+      {
+        "id": "S-06",
+        "item": "State transition validity check",
+        "status": "PASS"
+      },
+      {
+        "id": "S-07",
+        "item": "Array/collection bounds check",
+        "status": "PASS"
+      },
+      {
+        "id": "S-08",
+        "item": "Defensive copy on mutable input parameters",
+        "status": "PASS"
+      },
+      {
+        "id": "S-09",
+        "item": "Thread-safety annotation or synchronization",
+        "status": "PASS"
+      },
+      {
+        "id": "S-10",
+        "item": "Resource leak check",
+        "status": "PASS"
+      },
+      {
+        "id": "S-11",
+        "item": "Invariant condition check",
+        "status": "PASS"
+      },
+      {
+        "id": "S-12",
+        "item": "Error return code checked at every call site",
+        "status": "PASS"
+      },
+      {
+        "id": "S-13",
+        "item": "Magic number replacement with named constant",
+        "status": "PASS"
+      },
+      {
+        "id": "S-14",
+        "item": "Timeout on blocking calls",
+        "status": "PASS"
+      }
+    ],
+    "failCount": 0,
+    "warnCount": 0,
+    "blockEvidence": false,
+    "tokensUsed": 650,
+    "llmMeta": {
+      "agentType": "SafetyAgent",
+      "simulated": true,
+      "systemPromptLength": 227,
+      "userPromptLength": 2213,
+      "maxTokens": 1200
+    }
+  }
+]

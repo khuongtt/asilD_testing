@@ -1,0 +1,10 @@
+[
+  {
+    "methodId": "M_calculateBrakePressure_9b6638ec",
+    "name": "calculateBrakePressure",
+    "asilLevel": "D",
+    "confidence": 1.0,
+    "annotationSource": "EXPLICIT",
+    "needsReview": false
+  }
+]

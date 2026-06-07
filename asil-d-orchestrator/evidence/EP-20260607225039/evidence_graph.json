@@ -1,0 +1,29 @@
+{
+  "evidenceId": "EP-20260607225039",
+  "graphVersion": "v20260607225039_84c32f1f",
+  "commit": "84c32f1f7f6a",
+  "status": "INCOMPLETE",
+  "completenessCheck": {
+    "allRequirementsCovered": false,
+    "openRequirements": [
+      "REQ-008"
+    ],
+    "blockingItems": [
+      "REQ-008: no mapped methods",
+      "M_calculateBrakePressure_9b6638ec: branch coverage 0% < 95%",
+      "M_calculateBrakePressure_9b6638ec: mutation score 0% < 90%"
+    ],
+    "status": "INCOMPLETE",
+    "branchCoverage": 0.0,
+    "decisionCoverage": 0.0,
+    "conditionCoverage": null,
+    "mcdcCoverage": "NOT_ANALYZED",
+    "mutationScore": 0.0,
+    "equivalentMutantsUndocumented": 0,
+    "safetyFailCount": 0,
+    "averageTestQuality": 18.333333333333332,
+    "lowConfidenceSemanticAnnotations": 0
+  },
+  "signedAt": null,
+  "signedBy": null
+}

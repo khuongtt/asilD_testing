@@ -1,0 +1,5 @@
+<?xml version="1.0"?>
+<testsuite name="ASIL-D-Orchestrator" tests="2">
+  <testcase name="TC_calculateBrakePressure_happy_001" classname="M_calculateBrakePressure_9b6638ec" status="PASS"/>
+  <testcase name="TC-MUT-calculateBrakePressure-MUT-001" classname="M_calculateBrakePressure_9b6638ec" status="PASS"/>
+</testsuite>

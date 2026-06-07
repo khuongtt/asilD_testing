@@ -1,0 +1,18 @@
+[
+  {
+    "methodId": "M_calculateBrakePressure_9b6638ec",
+    "name": "calculateBrakePressure",
+    "score": 57.6,
+    "riskScore": 57.6,
+    "tier": "HIGH",
+    "riskTier": "HIGH",
+    "components": {
+      "asilWeight": 4.0,
+      "safetyCriticalMultiplier": 2.0,
+      "coverageGapFactor": 3.0,
+      "mutationFactor": 2.0,
+      "callChainFactor": 1.0,
+      "requirementFactor": 1.2
+    }
+  }
+]

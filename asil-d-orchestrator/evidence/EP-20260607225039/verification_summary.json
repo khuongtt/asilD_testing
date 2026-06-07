@@ -1,0 +1,57 @@
+{
+  "runId": "20260607225039",
+  "graphVersion": "v20260607225039_84c32f1f",
+  "commit": "84c32f1f7f6a",
+  "timestamp": "2026-06-07T22:50:39.196000",
+  "methodsTotal": 1,
+  "methodsAnalyzed": 1,
+  "qualityGates": {
+    "lineCoverage": "FAIL",
+    "lineCoverageValue": 0.0,
+    "branchCoverage": "FAIL",
+    "branchCoverageValue": 0.0,
+    "decisionCoverage": "FAIL",
+    "decisionCoverageValue": 0.0,
+    "conditionCoverage": "NOT_AVAILABLE",
+    "conditionCoverageValue": null,
+    "mcdcCoverage": "FAIL",
+    "mcdcCoverageValue": "NOT_ANALYZED",
+    "mutationScore": "FAIL",
+    "mutationScoreValue": 0.0,
+    "equivalentMutantsDocumented": "PASS",
+    "equivalentMutantsUndocumented": 0,
+    "safetyFailures": 0,
+    "requirementCoverage": "FAIL",
+    "testQualityScore": 18.333333333333332,
+    "lowConfidenceSemantic": 0,
+    "graphVersionPresent": "PASS",
+    "allGatesPassed": false
+  },
+  "lowConfidenceSemanticAnnotations": 0,
+  "evidenceGraph": {
+    "allRequirementsCovered": false,
+    "openRequirements": [
+      "REQ-008"
+    ],
+    "blockingItems": [
+      "REQ-008: no mapped methods",
+      "M_calculateBrakePressure_9b6638ec: branch coverage 0% < 95%",
+      "M_calculateBrakePressure_9b6638ec: mutation score 0% < 90%"
+    ],
+    "status": "INCOMPLETE"
+  },
+  "artifacts": [
+    "verification_summary.json",
+    "traceability_matrix.csv",
+    "test_execution_record.xml",
+    "coverage_report.html",
+    "mutation_report.html",
+    "safety_review.json",
+    "mcdc_matrix.csv",
+    "risk_score_report.json",
+    "call_graph_snapshot.json",
+    "semantic_annotation_report.json",
+    "run_manifest.json",
+    "evidence_graph.json"
+  ]
+}

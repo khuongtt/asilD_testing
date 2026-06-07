@@ -1,0 +1,824 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ASIL-D Test Orchestrator v3.0 — Workflow</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: #0f172a; color: #e2e8f0; line-height: 1.6;
+  }
+
+  /* Navigation */
+  nav {
+    position: fixed; top: 0; width: 100%; z-index: 100;
+    background: #1e293b; border-bottom: 1px solid #334155;
+    padding: 0 24px; display: flex; align-items: center; height: 56px;
+    gap: 8px; overflow-x: auto;
+  }
+  nav a {
+    color: #94a3b8; text-decoration: none; font-size: 13px;
+    padding: 6px 14px; border-radius: 6px; white-space: nowrap;
+    transition: 0.2s;
+  }
+  nav a:hover { background: #334155; color: #f1f5f9; }
+  nav .brand {
+    font-weight: 700; color: #38bdf8; font-size: 15px;
+    margin-right: 16px; white-space: nowrap;
+  }
+
+  main { max-width: 1200px; margin: 0 auto; padding: 80px 24px 60px; }
+
+  h1 { font-size: 32px; margin-bottom: 8px; color: #f8fafc; }
+  h1 small { font-size: 16px; color: #64748b; font-weight: 400; }
+  .subtitle { color: #94a3b8; margin-bottom: 40px; font-size: 15px; }
+
+  h2 {
+    font-size: 22px; margin: 48px 0 20px; color: #f1f5f9;
+    display: flex; align-items: center; gap: 10px;
+  }
+  h2 .badge {
+    font-size: 12px; padding: 2px 10px; border-radius: 10px;
+    background: #334155; color: #94a3b8; font-weight: 500;
+  }
+  h3 { font-size: 16px; margin: 24px 0 12px; color: #cbd5e1; }
+
+  /* CLI Card */
+  .cli-card {
+    background: #1e293b; border: 1px solid #334155; border-radius: 10px;
+    padding: 20px 24px; margin-bottom: 16px;
+  }
+  .cli-card .cmd {
+    font-family: "SF Mono", "Fira Code", "Cascadia Code", monospace;
+    font-size: 14px; background: #0f172a; padding: 8px 14px;
+    border-radius: 6px; margin: 6px 0; color: #e2e8f0;
+    display: inline-block;
+  }
+  .cli-card .cmd .kw { color: #38bdf8; }
+  .cli-card .cmd .arg { color: #fbbf24; }
+  .cli-card .cmd .val { color: #a78bfa; }
+
+  table {
+    width: 100%; border-collapse: collapse; margin: 12px 0;
+    font-size: 14px;
+  }
+  th, td {
+    text-align: left; padding: 10px 14px; border-bottom: 1px solid #334155;
+  }
+  th { color: #94a3b8; font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; }
+  td { color: #e2e8f0; }
+  td code { font-size: 13px; background: #1e293b; padding: 2px 8px; border-radius: 4px; color: #e2e8f0; }
+
+  /* Flowchart containers */
+  
+
+
+
+  /* Pipeline */
+  .pipeline {
+    display: flex; flex-direction: column; gap: 6px;
+    padding: 12px 0;
+  }
+  .pstep {
+    display: flex; align-items: flex-start; gap: 16px;
+    padding: 14px 18px; background: #1e293b; border: 1px solid #334155;
+    border-radius: 10px; border-left: 4px solid #38bdf8;
+    transition: 0.2s;
+  }
+  .pstep:hover { border-color: #475569; background: #253345; }
+  .pstep .num {
+    width: 32px; height: 32px; border-radius: 50%;
+    background: #334155; color: #38bdf8; display: flex;
+    align-items: center; justify-content: center;
+    font-weight: 700; font-size: 14px; flex-shrink: 0;
+  }
+  .pstep .body { flex: 1; }
+  .pstep .body h4 { font-size: 15px; color: #f1f5f9; margin-bottom: 2px; }
+  .pstep .body p { font-size: 13px; color: #94a3b8; }
+  .pstep .body .classes {
+    display: flex; flex-wrap: wrap; gap: 4px; margin-top: 6px;
+  }
+  .pstep .body .classes span {
+    background: #334155; padding: 1px 8px; border-radius: 4px;
+    font-size: 11px; color: #94a3b8; font-family: "SF Mono", monospace;
+  }
+
+  /* Agent cards */
+  .agent-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 14px; margin: 12px 0;
+  }
+  .agent-card {
+    background: #1e293b; border: 1px solid #334155; border-radius: 10px;
+    padding: 16px; border-top: 3px solid #38bdf8;
+  }
+  .agent-card .icon { font-size: 24px; margin-bottom: 6px; }
+  .agent-card h4 { font-size: 14px; color: #f1f5f9; }
+  .agent-card .atype { font-size: 11px; color: #94a3b8; margin-bottom: 6px; }
+  .agent-card .desc { font-size: 12px; color: #cbd5e1; margin-bottom: 8px; }
+  .agent-card .tags { display: flex; flex-wrap: wrap; gap: 4px; }
+  .agent-card .tags span {
+    font-size: 10px; padding: 2px 8px; border-radius: 4px;
+    background: #334155; color: #94a3b8;
+  }
+
+  .batch-info {
+    display: flex; gap: 16px; flex-wrap: wrap; margin: 16px 0;
+  }
+  .batch-group {
+    flex: 1; min-width: 260px;
+    background: #1e293b; border: 1px solid #334155; border-radius: 10px;
+    padding: 16px;
+  }
+  .batch-group h4 {
+    font-size: 14px; padding-bottom: 8px; margin-bottom: 10px;
+    border-bottom: 1px solid #334155; display: flex; align-items: center; gap: 8px;
+  }
+  .batch-group.batch-a h4 { color: #7dd3fc; }
+  .batch-group.batch-b h4 { color: #fde68a; }
+  .batch-group.batch-c h4 { color: #c4b5fd; }
+  .batch-group .ag-list { display: flex; flex-direction: column; gap: 8px; }
+  .batch-group .ag-list .ag-item {
+    background: #0f172a; border-radius: 6px; padding: 10px 12px;
+    font-size: 13px;
+  }
+  .batch-group .ag-list .ag-item .ag-name { font-weight: 600; color: #f1f5f9; }
+  .batch-group .ag-list .ag-item .ag-desc { font-size: 12px; color: #94a3b8; }
+
+  /* Gates */
+  .gate-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 10px; margin: 12px 0;
+  }
+  .gate {
+    background: #1e293b; border: 1px solid #334155; border-radius: 8px;
+    padding: 12px 14px; font-size: 13px;
+  }
+  .gate .g-name { color: #f1f5f9; font-weight: 600; font-size: 13px; }
+  .gate .g-thresh { color: #94a3b8; font-size: 12px; }
+  .gate .g-status { margin-top: 4px; font-size: 11px; font-weight: 600; }
+  .gate .g-status.pass { color: #34d399; }
+  .gate .g-status.fail { color: #f87171; }
+  .gate.critical { border-left: 3px solid #f87171; }
+  .gate.required { border-left: 3px solid #fbbf24; }
+  .gate.optional { border-left: 3px solid #64748b; }
+
+  /* File tree */
+  .file-tree { font-family: "SF Mono", "Fira Code", monospace; font-size: 13px; }
+  .file-tree .ft-dir { color: #38bdf8; font-weight: 600; }
+  .file-tree .ft-file { color: #cbd5e1; }
+  .file-tree .ft-comment { color: #64748b; font-style: italic; }
+  .file-tree details { margin: 2px 0; }
+  .file-tree details summary {
+    cursor: pointer; padding: 3px 6px; border-radius: 4px;
+    list-style: none; display: flex; align-items: center; gap: 6px;
+  }
+  .file-tree details summary::-webkit-details-marker { display: none; }
+  .file-tree details summary::before {
+    content: "\25B6"; font-size: 10px; color: #64748b; transition: 0.2s;
+  }
+  .file-tree details[open] summary::before { transform: rotate(90deg); }
+  .file-tree details summary:hover { background: #1e293b; }
+  .file-tree .ft-children { padding-left: 24px; }
+
+  .symlink {
+    display: inline-block; background: #2e1a3b; color: #c4b5fd;
+    padding: 1px 8px; border-radius: 4px; font-size: 11px;
+  }
+
+  /* Footer */
+  footer {
+    text-align: center; padding: 40px 0 20px; color: #64748b; font-size: 13px;
+    border-top: 1px solid #334155; margin-top: 48px;
+  }
+
+  /* Responsive */
+  @media (max-width: 640px) {
+    nav { padding: 0 12px; }
+    main { padding: 72px 12px 40px; }
+    h1 { font-size: 24px; }
+    .batch-info { flex-direction: column; }
+    .gate-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <span class="brand">ASIL-D Orchestrator</span>
+  <a href="#cli">CLI</a>
+  <a href="#modes">Modes</a>
+  <a href="#pipeline">Pipeline</a>
+  <a href="#agents">Agents</a>
+  <a href="#gates">Gates</a>
+  <a href="#artifacts">Artifacts</a>
+</nav>
+
+<main>
+
+<h1>ASIL-D Test Orchestrator <small>v3.0.0</small></h1>
+<p class="subtitle">
+  ISO 26262 ASIL-D compliant test generation and evidence pipeline for Java projects.
+  This visual guide walks through the entire workflow from CLI invocation to evidence package generation.
+</p>
+
+<!-- ===== SECTION 1: CLI ===== -->
+<h2 id="cli">1. CLI Usage <span class="badge">Entry Point</span></h2>
+
+<div class="cli-card">
+  <div class="cmd"><span class="kw">python3</span> orchestrator.py <span class="arg">run</span> <span class="val">[project_dir]</span> <span class="arg">--workspace</span> <span class="val">[dir]</span> <span class="arg">--token-budget</span> <span class="val">[n]</span></div>
+  <p style="color:#94a3b8;font-size:13px;margin-top:8px;">Run the full pipeline (default subcommand)</p>
+
+  <div class="cmd" style="margin-top:12px;"><span class="kw">python3</span> orchestrator.py <span class="arg">init</span> <span class="val">[project_dir]</span></div>
+  <p style="color:#94a3b8;font-size:13px;margin-top:8px;">Force re-bootstrap (clears graph store, cache, memory)</p>
+</div>
+
+<table>
+  <tr><th>Argument</th><th>Default</th><th>Description</th></tr>
+  <tr>
+    <td><code>project_dir</code></td><td><code>asil-d-orchestrator/tests</code></td>
+    <td>Path to the Java project to analyze</td>
+  </tr>
+  <tr>
+    <td><code>--workspace</code></td><td><code>asil-d-orchestrator</code></td>
+    <td>Directory for <code>.graph/</code> store and <code>evidence/</code> output</td>
+  </tr>
+  <tr>
+    <td><code>--force</code></td><td><code>false</code></td>
+    <td>Clear all state and re-bootstrap from scratch</td>
+  </tr>
+  <tr>
+    <td><code>--token-budget</code></td><td><code>50000</code></td>
+    <td>Max LLM tokens per run; tasks exceeding budget are deferred</td>
+  </tr>
+</table>
+
+<!-- ===== SECTION 2: MODES ===== -->
+<h2 id="modes">2. Mode Decision Tree <span class="badge">ModeDetector</span></h2>
+<p style="color:#94a3b8;font-size:14px;margin-bottom:16px;">
+  On every run the system detects the appropriate operating mode based on graph state and project changes.
+</p>
+
+<div style="background:#0f172a;border:2px solid #334155;border-radius:12px;overflow:hidden;margin-bottom:16px;">
+  <div style="background:#1e293b;padding:14px 20px;border-bottom:1px solid #334155;">
+    <span style="font-weight:700;color:#e2e8f0;font-size:15px;">ModeDetector.detect()</span>
+    <div style="display:flex;gap:8px;margin-top:6px;flex-wrap:wrap;">
+      <code style="font-size:11px;background:#0f172a;padding:3px 10px;border-radius:4px;color:#94a3b8;">graph_state = _graph_state(graph_dir)</code>
+      <code style="font-size:11px;background:#0f172a;padding:3px 10px;border-radius:4px;color:#94a3b8;">has_existing = _has_existing_reports(project_dir)</code>
+      <code style="font-size:11px;background:#0f172a;padding:3px 10px;border-radius:4px;color:#94a3b8;">java_changes = _git_java_changes(project_dir)</code>
+    </div>
+  </div>
+
+  <div style="padding:20px 16px;">
+    <!-- Tree CSS -->
+    <!-- Workflow CSS -->
+    <style>
+      .wf { display:flex; flex-direction:column; align-items:center; }
+
+      .wf-n { padding:8px 20px; border-radius:8px; text-align:center; font-weight:600; }
+      .wf-n.s { background:#1e293b; border:2px solid #34d399; color:#f1f5f9; font-size:15px; }
+      .wf-n.d { background:#3b2f1a; border:2px solid #fbbf24; color:#fde68a; font-size:15px; }
+      .wf-n.g { background:#1e293b; border:2px solid #475569; color:#94a3b8; font-size:14px; }
+      .wf-n.g.uni { border-color:#f87171; color:#fca5a5; }
+      .wf-n.g.ini { border-color:#34d399; color:#6ee7b7; }
+      .wf-n.o { font-size:14px; font-weight:700; padding:6px 16px; min-width:120px; }
+      .wf-n.o.bs { background:#1e3a5f; border:2px solid #38bdf8; color:#7dd3fc; }
+      .wf-n.o.bw { background:#1e3a5f; border:2px solid #38bdf8; color:#7dd3fc; }
+      .wf-n.o.inc { background:#3b2f1a; border:2px solid #fbbf24; color:#fde68a; }
+      .wf-n.o.cov { background:#1a3b2e; border:2px solid #34d399; color:#6ee7b7; }
+      .wf-n.o.cpl { background:#2e1a3b; border:2px solid #a78bfa; color:#c4b5fd; }
+
+      .wf-a { display:flex; flex-direction:column; align-items:center; }
+      .wf-a .b { width:2px; height:16px; background:#475569; }
+      .wf-a .t { width:0; height:0; border-left:6px solid transparent; border-right:6px solid transparent; border-top:8px solid #475569; }
+
+      .wf-h { display:flex; width:100%; align-items:flex-start; justify-content:center; }
+      .wf-h .hl { height:2px; flex:1; background:#475569; margin-top:8px; }
+      .wf-h .vt { width:2px; height:16px; background:#475569; margin:0 auto; }
+
+      .wf-leg { flex:1; display:flex; flex-direction:column; align-items:center; max-width:400px; }
+      .wf-leg .lb { font-size:12px; color:#64748b; margin:4px 0; background:#0f172a; padding:0 8px; font-weight:500; }
+
+      .wf-r { display:flex; gap:10px; justify-content:center; width:100%; }
+      .wf-r .c { flex:1; display:flex; flex-direction:column; align-items:center; }
+
+      .wf-d { font-size:12px; color:#64748b; margin-top:2px; font-weight:400; }
+
+      .wf-ov { display:flex; gap:20px; flex-wrap:wrap; justify-content:center; }
+      .wf-ov .c { flex:1; min-width:240px; max-width:340px; text-align:center; }
+      .wf-ov .c .b { display:flex; align-items:center; gap:8px; padding:8px 14px; border-radius:8px; font-weight:700; font-size:14px; justify-content:center; }
+      .wf-ov .c .b.r { background:#3b1f1a; border:1px solid #f87171; color:#fca5a5; }
+      .wf-ov .c .b.u { background:#1a2e3b; border:1px solid #38bdf8; color:#7dd3fc; }
+      .wf-ov .c .d { font-size:13px; color:#94a3b8; margin-top:6px; }
+    </style>
+
+    <div class="wf">
+
+      <!-- START -->
+      <div class="wf-n s">orchestrator.py run</div>
+      <div class="wf-a"><div class="b"></div><div class="t"></div></div>
+
+      <!-- Decision: graph_state -->
+      <div class="wf-n d">graph_state ?</div>
+      <div class="wf-a"><div class="b"></div><div class="t"></div></div>
+
+      <!-- Branch: UNINITIALIZED | INITIALIZED -->
+      <div class="wf-h"><div class="hl"></div></div>
+      <div style="display:flex;gap:0;width:100%;margin-top:-8px;">
+        <div class="wf-leg">
+          <div class="vt"></div>
+          <div class="lb">manifest missing/empty</div>
+          <div class="wf-n g uni">UNINITIALIZED</div>
+          <div class="wf-a"><div class="b"></div><div class="t"></div></div>
+          <div class="wf-n d" style="font-size:14px;padding:6px 14px;">has reports?</div>
+          <div class="wf-a"><div class="b"></div><div class="t"></div></div>
+          <div class="wf-h"><div class="hl"></div></div>
+          <div class="wf-r" style="margin-top:-8px;">
+            <div class="c">
+              <div class="vt"></div>
+              <div style="font-size:12px;color:#94a3b8;margin:2px 0;font-weight:500;">NO</div>
+              <div class="wf-n o bs" style="font-size:13px;padding:5px 14px;">BOOTSTRAP</div>
+              <div class="wf-d">worst-case risk<br>zero-filled coverage</div>
+            </div>
+            <div class="c">
+              <div class="vt"></div>
+              <div style="font-size:12px;color:#94a3b8;margin:2px 0;font-weight:500;">YES</div>
+              <div class="wf-n o bw" style="font-size:13px;padding:5px 14px;">BOOTSTRAP<br>WITH DATA</div>
+              <div class="wf-d">reads existing<br>JaCoCo / PIT</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="wf-leg">
+          <div class="vt"></div>
+          <div class="lb">manifest exists + methodCount &gt; 0</div>
+          <div class="wf-n g ini">INITIALIZED</div>
+          <div class="wf-a"><div class="b"></div><div class="t"></div></div>
+          <div class="wf-n d" style="font-size:14px;padding:6px 14px;">mode.json ?</div>
+          <div class="wf-a"><div class="b"></div><div class="t"></div></div>
+          <div class="wf-h"><div class="hl"></div></div>
+          <div class="wf-r" style="margin-top:-8px;">
+            <div class="c">
+              <div class="vt"></div>
+              <div style="font-size:12px;color:#94a3b8;margin:2px 0;font-weight:500;">COMPLETE</div>
+              <div class="wf-n o cpl" style="font-size:13px;padding:5px 14px;">COMPLETE</div>
+              <div class="wf-a"><div class="b"></div><div class="t"></div></div>
+              <div class="wf-n d" style="font-size:13px;padding:5px 12px;">java changes?</div>
+              <div class="wf-a"><div class="b"></div><div class="t"></div></div>
+              <div class="wf-h" style="max-width:200px;"><div class="hl"></div></div>
+              <div class="wf-r" style="margin-top:-8px;max-width:200px;">
+                <div class="c">
+                  <div class="vt"></div>
+                  <div style="font-size:11px;color:#94a3b8;font-weight:500;">Y</div>
+                  <div class="wf-n o inc" style="font-size:12px;padding:4px 12px;">INCREMENTAL</div>
+                </div>
+                <div class="c">
+                  <div class="vt"></div>
+                  <div style="font-size:11px;color:#94a3b8;font-weight:500;">N</div>
+                  <div class="wf-n o cov" style="font-size:12px;padding:4px 12px;">COVERAGE<br>ONLY</div>
+                </div>
+              </div>
+            </div>
+            <div class="c">
+              <div class="vt"></div>
+              <div style="font-size:12px;color:#94a3b8;margin:2px 0;font-weight:500;">other / missing</div>
+              <div class="wf-n g" style="border-color:#475569;color:#94a3b8;font-size:13px;">not COMPLETE</div>
+              <div class="wf-a"><div class="b"></div><div class="t"></div></div>
+              <div class="wf-n d" style="font-size:13px;padding:5px 12px;">java changes?</div>
+              <div class="wf-a"><div class="b"></div><div class="t"></div></div>
+              <div class="wf-h" style="max-width:200px;"><div class="hl"></div></div>
+              <div class="wf-r" style="margin-top:-8px;max-width:200px;">
+                <div class="c">
+                  <div class="vt"></div>
+                  <div style="font-size:11px;color:#94a3b8;font-weight:500;">Y</div>
+                  <div class="wf-n o inc" style="font-size:12px;padding:4px 12px;">INCREMENTAL</div>
+                </div>
+                <div class="c">
+                  <div class="vt"></div>
+                  <div style="font-size:11px;color:#94a3b8;font-weight:500;">N</div>
+                  <div style="display:flex;flex-direction:column;align-items:center;">
+                    <div class="wf-n d" style="font-size:12px;padding:4px 10px;">has reports?</div>
+                    <div class="wf-a"><div class="b" style="height:10px;"></div><div class="t"></div></div>
+                    <div class="wf-r" style="gap:4px;">
+                      <div class="c">
+                        <div style="font-size:11px;color:#94a3b8;font-weight:500;">Y</div>
+                        <div class="wf-n o cov" style="font-size:11px;padding:3px 10px;">COV ONLY</div>
+                      </div>
+                      <div class="c">
+                        <div style="font-size:11px;color:#94a3b8;font-weight:500;">N</div>
+                        <div class="wf-n o inc" style="font-size:11px;padding:3px 10px;">INCR (fback)</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Overrides -->
+      <div style="border-top:2px solid #334155;margin-top:24px;padding:16px 0 0;width:100%;">
+        <div class="wf-ov">
+          <div class="c">
+            <div class="b r"><span>INCREMENTAL</span> <span style="color:#f87171;">→</span> <span>BOOTSTRAP</span></div>
+            <div class="d">Major refactor (&gt;60% methods changed)<br><code style="background:#1e293b;padding:1px 6px;border-radius:3px;">delta_engine.detect_major_refactor()</code> → store.reset() + re-bootstrap</div>
+          </div>
+          <div class="c">
+            <div class="b u"><span>Bootstrap completes</span> <span style="color:#38bdf8;">→</span> <span style="background:#2e1a3b;border:1px solid #a78bfa;border-radius:5px;padding:2px 10px;color:#c4b5fd;">COMPLETE</span></div>
+            <div class="d">Written to <code style="background:#1e293b;padding:1px 6px;border-radius:3px;">mode.json</code> via <code style="background:#1e293b;padding:1px 6px;border-radius:3px;">store.write_mode()</code> — signals future INCREMENTAL runs</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<table style="margin-top:16px;">
+  <tr><th>Mode</th><th>Behavior</th></tr>
+  <tr><td><code>BOOTSTRAP</code></td><td>Full re-parse all Java files, zero-filled coverage (worst-case), wave-based task planning (HIGH → MEDIUM → LOW waves)</td></tr>
+  <tr><td><code>BOOTSTRAP_WITH_DATA</code></td><td>Full re-parse but reads existing JaCoCo/PIT reports; still uses wave-based planning</td></tr>
+  <tr><td><code>INCREMENTAL</code></td><td>Git-diff based parsing of changed files only; caches agent outputs for unchanged methods</td></tr>
+  <tr><td><code>COVERAGE_ONLY</code></td><td>No Java parsing; fresh re-evaluate coverage and mutation data only</td></tr>
+  <tr><td><code>COMPLETE</code></td><td>Not a run mode — state written to <code>mode.json</code> after successful bootstrap; signals future INCREMENTAL runs</td></tr>
+</table>
+
+<!-- ===== SECTION 3: PIPELINE ===== -->
+<h2 id="pipeline">3. Pipeline Sequence <span class="badge">Orchestrator.run()</span></h2>
+<p style="color:#94a3b8;font-size:14px;margin-bottom:16px;">
+  Each run follows a 10-phase pipeline. The diagram below shows the sequential flow.
+</p>
+
+<div class="pipeline">
+
+  <div class="pstep" style="border-left-color:#34d399;">
+    <div class="num">1</div>
+    <div class="body">
+      <h4>Initialize</h4>
+      <p>Create all subsystems: GraphStore, KnowledgeGraph, AgentCache, Memory, Traceability, RequirementGraph, EvidenceEngine, DeltaEngine, Prioritizer</p>
+      <div class="classes"><span>GraphStore</span><span>KnowledgeGraph</span><span>AgentOutputCache</span><span>AgentMemoryLayer</span><span>TraceabilityGraph</span><span>EvidenceEngine</span></div>
+    </div>
+  </div>
+
+  <div class="pstep" style="border-left-color:#fbbf24;">
+    <div class="num">2</div>
+    <div class="body">
+      <h4>Detect Mode</h4>
+      <p>Load previous hash manifest, run ModeDetector to determine BOOTSTRAP / INCREMENTAL / COVERAGE_ONLY</p>
+      <div class="classes"><span>ModeDetector.detect()</span><span>store.load_hash_manifest()</span></div>
+    </div>
+  </div>
+
+  <div class="pstep" style="border-left-color:#38bdf8;">
+    <div class="num">3</div>
+    <div class="body">
+      <h4>Parse Source Code</h4>
+      <p>
+        <strong>BOOTSTRAP:</strong> Tree-sitter AST parsing of all Java files, CFG/DFG building, semantic annotation, call graph construction, coverage/mutation parsing.<br>
+        <strong>INCREMENTAL:</strong> Git-diff based incremental parser, re-annotation of changed files only.
+      </p>
+      <div class="classes"><span>JavaParser</span><span>CFGBuilder</span><span>DFGBuilder</span><span>SemanticAnnotator</span><span>CallGraphBuilder</span><span>CoverageParser</span><span>MutationParser</span></div>
+    </div>
+  </div>
+
+  <div class="pstep" style="border-left-color:#f472b6;">
+    <div class="num">4</div>
+    <div class="body">
+      <h4>Risk Score &amp; Prioritize</h4>
+      <p>Calculate risk score per method (ASIL weight × safety multiplier × coverage gap × mutation factor × call chain × requirements). Rank methods, build task queue, apply token budget.</p>
+      <div class="classes"><span>RiskScorer.calculate_risk()</span><span>PrioritizationEngine.build_task_queue()</span><span>apply_budget()</span></div>
+    </div>
+  </div>
+
+  <div class="pstep" style="border-left-color:#a78bfa;">
+    <div class="num">5</div>
+    <div class="body">
+      <h4>Compute Delta</h4>
+      <p>Compare method hashes against the previous hash manifest to identify dirty, new, clean, and deleted methods. Detect major refactors (>60% change).</p>
+      <div class="classes"><span>GraphDeltaEngine.compute()</span><span>detect_major_refactor()</span></div>
+    </div>
+  </div>
+
+  <div class="pstep" style="border-left-color:#38bdf8;">
+    <div class="num">6</div>
+    <div class="body">
+      <h4>Persist Graph</h4>
+      <p>Write AST, CFG, DFG, coverage, mutation data to <code>.graph/</code> store. Update method hash manifest. Store knowledge graph nodes/edges. Rebuild traceability stubs.</p>
+      <div class="classes"><span>BootstrapManager._persist_all()</span><span>GraphStore.write_json()</span><span>KnowledgeGraph</span><span>TraceabilityGraph.rebuild_stubs()</span></div>
+    </div>
+  </div>
+
+  <div class="pstep" style="border-left-color:#fbbf24;">
+    <div class="num">7</div>
+    <div class="body">
+      <h4>Batch Agents</h4>
+      <p>Group tasks by method ID into agent batches (A → B → C) for sequential execution within each method.</p>
+      <div class="classes"><span>AgentBatcher.group_tasks()</span></div>
+    </div>
+  </div>
+
+  <div class="pstep" style="border-left-color:#f87171;">
+    <div class="num">8</div>
+    <div class="body">
+      <h4>Execute Agents</h4>
+      <p>For each task: check memory + cache → if miss, build graph slice, run agent, score quality, retry if below 70, store output, update memory and traceability.</p>
+      <div class="classes"><span>5 Agents</span><span>TestQualityScorer</span><span>AgentOutputCache</span><span>PromptBuilder.build_feedback()</span></div>
+    </div>
+  </div>
+
+  <div class="pstep" style="border-left-color:#34d399;">
+    <div class="num">9</div>
+    <div class="body">
+      <h4>Update Knowledge Graph</h4>
+      <p>Create test relationships (TESTED_BY, KILLS) between methods and generated tests in the knowledge graph.</p>
+      <div class="classes"><span>KnowledgeGraph.update_test_relationships()</span></div>
+    </div>
+  </div>
+
+  <div class="pstep" style="border-left-color:#f472b6;">
+    <div class="num">10</div>
+    <div class="body">
+      <h4>Generate Evidence</h4>
+      <p>Check all quality gates (line coverage, branch, MC/DC, mutation, safety, quality score). Write 13+ artifact files to <code>evidence/EP-{run_id}/</code>. Create symlink from <code>.graph/latest_evidence</code>.</p>
+      <div class="classes"><span>EvidenceEngine.generate_evidence()</span><span>_check_gates()</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== SECTION 4: AGENTS ===== -->
+<h2 id="agents">4. Agent System <span class="badge">5 Agents × 3 Batches</span></h2>
+<p style="color:#94a3b8;font-size:14px;margin-bottom:16px;">
+  All agents extend <code>BaseAgent</code> and use <code>PromptBuilder</code> to construct LLM prompts. Outputs are scored by <code>TestQualityScorer</code> and retried if &lt; 70.
+</p>
+
+<div class="batch-info">
+  <div class="batch-group batch-a">
+    <h4><span style="font-size:18px;">A</span> Safety + Unit Tests</h4>
+    <div class="ag-list">
+      <div class="ag-item">
+        <div class="ag-name">SafetyAgent</div>
+        <div class="ag-desc">ISO 26262 checklist review (14 items S-01 to S-14). Checks null safety, overflow, exception handling, thread safety, resource leaks, etc.</div>
+        <div style="margin-top:4px;display:flex;gap:4px;flex-wrap:wrap;">
+          <span style="font-size:10px;background:#334155;padding:1px 6px;border-radius:3px;color:#94a3b8;">Task: SAFETY_FAIL</span>
+          <span style="font-size:10px;background:#334155;padding:1px 6px;border-radius:3px;color:#94a3b8;">1250 tokens</span>
+        </div>
+      </div>
+      <div class="ag-item">
+        <div class="ag-name">UnitTestAgent</div>
+        <div class="ag-desc">Generate unit tests for uncovered methods: happy path, exception per throwsType, boundary per numeric param, branch per decision.</div>
+        <div style="margin-top:4px;display:flex;gap:4px;flex-wrap:wrap;">
+          <span style="font-size:10px;background:#334155;padding:1px 6px;border-radius:3px;color:#94a3b8;">Task: UNIT_MISSING</span>
+          <span style="font-size:10px;background:#334155;padding:1px 6px;border-radius:3px;color:#94a3b8;">1200 tokens</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="batch-group batch-b">
+    <h4><span style="font-size:18px;">B</span> MC/DC + Coverage</h4>
+    <div class="ag-list">
+      <div class="ag-item">
+        <div class="ag-name">MCDCAgent</div>
+        <div class="ag-desc">Analyze MC/DC gaps. Build 2^N truth tables, identify independent condition pairs, generate covering tests.</div>
+        <div style="margin-top:4px;display:flex;gap:4px;flex-wrap:wrap;">
+          <span style="font-size:10px;background:#334155;padding:1px 6px;border-radius:3px;color:#94a3b8;">Task: MCDC_GAP</span>
+          <span style="font-size:10px;background:#334155;padding:1px 6px;border-radius:3px;color:#94a3b8;">1200 tokens</span>
+        </div>
+      </div>
+      <div class="ag-item">
+        <div class="ag-name">CoverageAgent</div>
+        <div class="ag-desc">Generate tests for uncovered branches. Reads <code>mcdcCoverage</code> and <code>confirmedUnreachableBranches</code> from memory.</div>
+        <div style="margin-top:4px;display:flex;gap:4px;flex-wrap:wrap;">
+          <span style="font-size:10px;background:#334155;padding:1px 6px;border-radius:3px;color:#94a3b8;">Tasks: BRANCH_GAP */**/***</span>
+          <span style="font-size:10px;background:#334155;padding:1px 6px;border-radius:3px;color:#94a3b8;">950 tokens</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="batch-group batch-c">
+    <h4><span style="font-size:18px;">C</span> Mutation</h4>
+    <div class="ag-list">
+      <div class="ag-item">
+        <div class="ag-name">MutationAgent</div>
+        <div class="ag-desc">Generate kill tests for surviving mutants. Skips mutants with equivalent probability >= 0.7. Uses dataFlowNote for targeted test generation.</div>
+        <div style="margin-top:4px;display:flex;gap:4px;flex-wrap:wrap;">
+          <span style="font-size:10px;background:#334155;padding:1px 6px;border-radius:3px;color:#94a3b8;">Tasks: MUTATION */**/***</span>
+          <span style="font-size:10px;background:#334155;padding:1px 6px;border-radius:3px;color:#94a3b8;">950 tokens</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<h3>Test Quality Scorer</h3>
+<div class="cli-card">
+  <p style="font-size:13px;margin-bottom:12px;">7 weighted dimensions — deterministic rule engine (no LLM). Score = sum of passed dimension weights + bonuses. Retry loop if score &lt; 70.</p>
+  <table>
+    <tr><th>Dimension</th><th>Weight</th><th>Check</th></tr>
+    <tr><td>branch_assertion</td><td>25</td><td>Test has at least one assert statement</td></tr>
+    <tr><td>assertion_specificity</td><td>20</td><td>Asserts check concrete values (assertEquals, assertTrue, etc.)</td></tr>
+    <tr><td>exception_assertion</td><td>15</td><td>assertThrows with both type + message</td></tr>
+    <tr><td>mock_verification</td><td>10</td><td>Mockito verify() called for each stub</td></tr>
+    <tr><td>naming_convention</td><td>10</td><td>test_{method}_{scenario}_{expected} pattern</td></tr>
+    <tr><td>boundary_coverage</td><td>10</td><td>Uses min/max/zero/negative inputs</td></tr>
+    <tr><td>no_duplicate_logic</td><td>10</td><td>Body not identical to existing tests</td></tr>
+  </table>
+  <p style="font-size:12px;color:#94a3b8;margin-top:8px;">+10 bonus if <code>observationPoint</code> appears in code. -10 penalty if <code>coveredBranches</code> already in code. Score clamped to [0, 100].</p>
+</div>
+
+<!-- ===== SECTION 5: GATES ===== -->
+<h2 id="gates">5. Quality Gates <span class="badge">EvidenceEngine</span></h2>
+<p style="color:#94a3b8;font-size:14px;margin-bottom:16px;">
+  After agent execution, <code>EvidenceEngine._check_gates()</code> validates all metrics against ASIL-D thresholds.
+  A failed gate prevents the evidence package from being signed.
+</p>
+
+<div class="gate-grid">
+  <div class="gate critical">
+    <div class="g-name">Line Coverage</div>
+    <div class="g-thresh">Threshold: ≥ 95%</div>
+    <div class="g-status pass">Critical ✓</div>
+  </div>
+  <div class="gate critical">
+    <div class="g-name">Branch Coverage</div>
+    <div class="g-thresh">Threshold: ≥ 95%</div>
+    <div class="g-status pass">Critical ✓</div>
+  </div>
+  <div class="gate critical">
+    <div class="g-name">MC/DC Coverage</div>
+    <div class="g-thresh">Threshold: 100%</div>
+    <div class="g-status pass">Critical ✓</div>
+  </div>
+  <div class="gate critical">
+    <div class="g-name">Mutation Score</div>
+    <div class="g-thresh">Threshold: ≥ 90%</div>
+    <div class="g-status pass">Critical ✓</div>
+  </div>
+  <div class="gate critical">
+    <div class="g-name">Safety Failures</div>
+    <div class="g-thresh">Count: 0</div>
+    <div class="g-status pass">Critical ✓</div>
+  </div>
+  <div class="gate required">
+    <div class="g-name">Test Quality</div>
+    <div class="g-thresh">Threshold: ≥ 70</div>
+    <div class="g-status pass">Required ✓</div>
+  </div>
+  <div class="gate required">
+    <div class="g-name">Decision Coverage</div>
+    <div class="g-thresh">Threshold: ≥ 95% (if available)</div>
+    <div class="g-status pass">Required ✓</div>
+  </div>
+  <div class="gate required">
+    <div class="g-name">Condition Coverage</div>
+    <div class="g-thresh">Threshold: ≥ 95% (if available)</div>
+    <div class="g-status pass">Required ✓</div>
+  </div>
+  <div class="gate required">
+    <div class="g-name">Low Confidence Semantic</div>
+    <div class="g-thresh">Count: 0</div>
+    <div class="g-status pass">Required ✓</div>
+  </div>
+  <div class="gate optional">
+    <div class="g-name">Requirement Coverage</div>
+    <div class="g-thresh">All requirements mapped</div>
+    <div class="g-status pass">Required ✓</div>
+  </div>
+  <div class="gate optional">
+    <div class="g-name">Graph Version Present</div>
+    <div class="g-thresh">Must be set</div>
+    <div class="g-status pass">Required ✓</div>
+  </div>
+  <div class="gate optional">
+    <div class="g-name">Equivalent Mutants Undocumented</div>
+    <div class="g-thresh">Count: 0</div>
+    <div class="g-status pass">Required ✓</div>
+  </div>
+</div>
+
+<!-- ===== SECTION 6: ARTIFACTS ===== -->
+<h2 id="artifacts">6. Output Artifacts <span class="badge">Graph Store + Evidence</span></h2>
+<p style="color:#94a3b8;font-size:14px;margin-bottom:16px;">
+  All outputs are written to the <code>.graph/</code> store and <code>evidence/</code> directory under the workspace root.
+</p>
+
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+
+<div class="cli-card" style="margin:0;">
+  <h3 style="margin:0 0 10px;font-size:15px;color:#38bdf8;">.graph/ store</h3>
+  <div class="file-tree">
+    <details open>
+      <summary><span class="ft-dir">.graph/</span></summary>
+      <div class="ft-children">
+        <div><span class="ft-file">manifest.json</span> <span class="ft-comment">Current version meta</span></div>
+        <div><span class="ft-file">mode.json</span> <span class="ft-comment">BOOTSTRAP / INCREMENTAL / COMPLETE</span></div>
+        <div><span class="ft-file">bootstrap_state.json</span> <span class="ft-comment">Wave plan</span></div>
+        <div><span class="ft-file">delta_report.json</span> <span class="ft-comment">Change summary</span></div>
+        <div><span class="ft-file">deferred_tasks.json</span> <span class="ft-comment">Budget overflow</span></div>
+        <details>
+          <summary><span class="ft-dir">hashes/</span></summary>
+          <div class="ft-children"><div><span class="ft-file">manifest.json</span> <span class="ft-comment">Method hashes</span></div></div>
+        </details>
+        <details>
+          <summary><span class="ft-dir">versions/</span></summary>
+          <div class="ft-children">
+            <div><span class="ft-file">v{ts}_{commit}/snapshot.json.gz</span></div>
+            <div><span class="ft-file">v{ts}_{commit}/manifest.json</span></div>
+          </div>
+        </details>
+        <details>
+          <summary><span class="ft-dir">ast/</span></summary>
+          <div class="ft-children"><span class="ft-comment">Per-class AST metadata</span></div>
+        </details>
+        <details>
+          <summary><span class="ft-dir">cfg/</span></summary>
+          <div class="ft-children"><span class="ft-comment">Control flow graphs</span></div>
+        </details>
+        <details>
+          <summary><span class="ft-dir">dfg/</span></summary>
+          <div class="ft-children"><span class="ft-comment">Data flow graphs</span></div>
+        </details>
+        <details>
+          <summary><span class="ft-dir">semantic/</span></summary>
+          <div class="ft-children"><span class="ft-comment">ASIL level, domain, safety</span></div>
+        </details>
+        <details>
+          <summary><span class="ft-dir">risk/</span></summary>
+          <div class="ft-children"><span class="ft-comment">Risk scores</span></div>
+        </details>
+        <details>
+          <summary><span class="ft-dir">coverage/</span></summary>
+          <div class="ft-children"><span class="ft-comment">JaCoCo per-method data</span></div>
+        </details>
+        <details>
+          <summary><span class="ft-dir">mutation/</span></summary>
+          <div class="ft-children"><span class="ft-comment">PIT per-method data</span></div>
+        </details>
+        <details>
+          <summary><span class="ft-dir">traceability/</span></summary>
+          <div class="ft-children"><span class="ft-comment">Req→method links</span></div>
+        </details>
+        <details>
+          <summary><span class="ft-dir">kg/</span></summary>
+          <div class="ft-children">
+            <div><span class="ft-file">edges.json</span></div>
+            <details><summary><span class="ft-dir">nodes/</span></summary>
+            <div class="ft-children"><span class="ft-comment">CLASS, METHOD, DECISION, ...</span></div></details>
+          </div>
+        </details>
+        <details>
+          <summary><span class="ft-dir">cache/agent_outputs/</span></summary>
+          <div class="ft-children"><span class="ft-comment">Cached LLM outputs (30 day TTL)</span></div>
+        </details>
+        <div><span class="ft-file">agent_memory_snapshot.json</span> <span class="ft-comment">Facts + completed tasks</span></div>
+        <div><span class="ft-file"></span><span class="symlink"> latest_evidence</span> <span class="ft-comment">→ evidence/EP-{run_id}/</span></div>
+      </div>
+    </details>
+  </div>
+</div>
+
+<div class="cli-card" style="margin:0;">
+  <h3 style="margin:0 0 10px;font-size:15px;color:#f472b6;">evidence/ package</h3>
+  <div class="file-tree">
+    <details open>
+      <summary><span class="ft-dir">evidence/EP-{run_id}/</span></summary>
+      <div class="ft-children">
+        <div><span class="ft-file">verification_summary.json</span></div>
+        <div><span class="ft-file">run_manifest.json</span> <span class="ft-comment">Signed (if all gates pass)</span></div>
+        <div><span class="ft-file">evidence_graph.json</span></div>
+        <div><span class="ft-file">traceability_matrix.csv</span></div>
+        <div><span class="ft-file">safety_review.json</span></div>
+        <div><span class="ft-file">risk_score_report.json</span></div>
+        <div><span class="ft-file">call_graph_snapshot.json</span></div>
+        <div><span class="ft-file">semantic_annotation_report.json</span></div>
+        <div><span class="ft-file">mcdc_matrix.csv</span></div>
+        <div><span class="ft-file">test_execution_record.xml</span></div>
+        <div><span class="ft-file">coverage_report.html</span></div>
+        <div><span class="ft-file">mutation_report.html</span></div>
+        <div><span class="ft-file">deferred_tasks.json</span> <span class="ft-comment">If budget exceeded</span></div>
+      </div>
+    </details>
+  </div>
+  <h3 style="margin:12px 0 6px;font-size:13px;color:#94a3b8;">Per-method store (inside .graph/)</h3>
+  <table style="font-size:12px;">
+    <tr><th>Method</th><th>Fields</th></tr>
+    <tr><td>semantic</td><td>asilLevel, domain, safetyCritical, linkedRequirements, confidence</td></tr>
+    <tr><td>coverage</td><td>line, branch, decision, condition, mcdc, missingLines, missingBranches</td></tr>
+    <tr><td>mutation</td><td>mutationScore, survivedMutants (each with method, condition, dataFlowNote)</td></tr>
+    <tr><td>risk</td><td>score, tier, components {asilWeight, safetyMultiplier, coverageGap, ...}</td></tr>
+  </table>
+</div>
+</div>
+
+<footer>
+  ASIL-D Test Orchestrator v3.0.0 — ISO 26262 ASIL-D Compliant Test Generation Pipeline<br>
+  Generated from codebase at <code>src/</code> — 12 agents, 12 quality gates, 3 operating modes
+</footer>
+
+</main>
+</body>
+</html>
